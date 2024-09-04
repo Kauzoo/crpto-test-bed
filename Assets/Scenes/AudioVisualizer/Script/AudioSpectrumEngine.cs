@@ -66,8 +66,10 @@ public class AudioSpectrumEngine : MonoBehaviour
     public Transform bandCube;
     public Transform cameraTransform;
     public Transform rotatePivot;
-    
-    [Header("SignalProcessing")]
+    public AudioSource audioSource;
+    public string microphone;
+
+    [Header("SignalProcessing")] public bool useGNURadio = false;
     public EqualizerSettings equalizerSettings = new EqualizerSettings();
     public BandSettings bandSettings = new BandSettings();
     
@@ -88,28 +90,26 @@ public class AudioSpectrumEngine : MonoBehaviour
     public bool rotate;
     public float speed;
     
-
     
-    
-    
-
-
     private void Awake()
     {
         Debug.LogWarning("FFT buffer reads ocasionally produce exceptions which are silently ignored");
-        try
+        if (useGNURadio)
         {
-            _fileStream = new FileStream(@"R:" + @"\" + "sink.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            Debug.LogError(e);
-            Debug.LogError("Missing GNU Radio Sink File. RAMDsik is probably missconfigured");
-            throw;
+            try
+            {
+                _fileStream = new FileStream(@"R:" + @"\" + "sink.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                _reader = new BinaryReader(_fileStream);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Debug.LogError(e);
+                Debug.LogError("Missing GNU Radio Sink File. RAMDsik is probably missconfigured");
+                throw;
+            }
         }
         
-        _reader = new BinaryReader(_fileStream);
         _spectrumBuffer = new float[SampleCount];
         _spectrumBands = new float[8];
         _bandBuffer = new float[8];
@@ -122,6 +122,10 @@ public class AudioSpectrumEngine : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (!useGNURadio)
+        {
+            ReadMicrophone();
+        }
         RegenerateSpectrum();
         Vector3 center = _audioCubeArray[0].localPosition - _audioCubeArray[^1].localPosition;
         float center_offset = center.magnitude * 0.5f;
@@ -138,8 +142,15 @@ public class AudioSpectrumEngine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       ReadFFTBuffer();
-       Equalizer();
+        if (useGNURadio)
+        {
+            ReadFFTBuffer();
+        }
+        else
+        {
+            GenerateFFTBuffer();
+        } 
+        Equalizer();
        if (useFullBuffer)
        {
            FullSpectrumBuffer();
@@ -148,7 +159,7 @@ public class AudioSpectrumEngine : MonoBehaviour
        //BandBuffer();
        if (regenerateSpectrum)
        {
-           ReadFFTBuffer();
+           RegenerateSpectrum();
            regenerateSpectrum = false;
        }
        AnimateSpectrum();
@@ -166,8 +177,6 @@ public class AudioSpectrumEngine : MonoBehaviour
             _audioCubeArray[i] = Instantiate(target, new Vector3(0f, 0f, 0f), Quaternion.identity);
             _audioCubeArray[i].parent = transform;
         }
-        
-
         for (int i = _audioCubeArray.Length-1; i >= 0; i--)
         {
             //float scaleFactor = ( (1.0f / Mathf.Pow(10.0f, (i + 1.0f)))  + 1.0f) * widthMultiplier;
@@ -293,7 +302,6 @@ public class AudioSpectrumEngine : MonoBehaviour
                 _fullSpectrumBuffer[i] -= _fullSpectrumBufferDecay[i];
                 _fullSpectrumBufferDecay[i] *= bandBandBufferDecayMultiplier;
             }
-
             if (_spectrumBuffer[i] > _fullSpectrumBuffer[i])
             {
                 _fullSpectrumBuffer[i] = _spectrumBuffer[i];
@@ -320,23 +328,6 @@ public class AudioSpectrumEngine : MonoBehaviour
         }
     }
     
-    /*private void ReadFFTBuffer()
-    {
-        //_fileStream = new FileStream(@"B:\source\Unity\CryptoTestBed\GNURadio" + @"\" + "sink.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        _fileStream = new FileStream(@"R:" + @"\" + "sink.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        BinaryReader br = new BinaryReader(_fileStream);
-        var buf = new byte[SampleCount];
-        Span<byte> bufSpan = buf.AsSpan();
-        var bytes_read = br.Read(bufSpan);
-        int index = 0;
-        for (int i = 0; i < bytes_read; i += 4)
-        {
-            index++;
-            _spectrumBuffer[index] = System.BitConverter.ToSingle(bufSpan.Slice(i, 4));
-            Debug.Log(_spectrumBuffer[index]);
-        }
-    }*/
-    
     private void ReadFFTBuffer()
     {
         long updated = Math.Min(_fileStream.Length, BufferSizeBytes);
@@ -362,6 +353,17 @@ public class AudioSpectrumEngine : MonoBehaviour
                 // FIXME
             }
         }
+    }
+
+    private void GenerateFFTBuffer()
+    {
+        AudioListener.GetSpectrumData(_spectrumBuffer, 0, FFTWindow.BlackmanHarris);
+    }
+
+    private void ReadMicrophone()
+    {
+        audioSource.clip = Microphone.Start(microphone, true, 10, AudioSettings.outputSampleRate);
+        audioSource.Play();
     }
     
     private void RotateCam()

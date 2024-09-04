@@ -595,6 +595,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3155402646451135912, guid: 51f10b9b1ea5ed842a06f2a13eb1f867,
         type: 3}
+      propertyPath: microphone
+      value: Stereo Mix (Realtek(R) Audio)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3155402646451135912, guid: 51f10b9b1ea5ed842a06f2a13eb1f867,
+        type: 3}
+      propertyPath: useGNURadio
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3155402646451135912, guid: 51f10b9b1ea5ed842a06f2a13eb1f867,
+        type: 3}
       propertyPath: useFullBuffer
       value: 1
       objectReference: {fileID: 0}
@@ -647,6 +657,11 @@ PrefabInstance:
         type: 3}
       propertyPath: equalizerSettings.band8
       value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3155402646451135912, guid: 51f10b9b1ea5ed842a06f2a13eb1f867,
+        type: 3}
+      propertyPath: flatAmplitudeMultiplier
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 3155402646451135912, guid: 51f10b9b1ea5ed842a06f2a13eb1f867,
         type: 3}
