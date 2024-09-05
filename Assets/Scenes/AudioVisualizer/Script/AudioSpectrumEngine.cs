@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEditor;
+using UnityEngine.XR;
 
 [System.Serializable]
 public class EqualizerSettings
@@ -60,6 +61,7 @@ public class AudioSpectrumEngine : MonoBehaviour
     private Transform[] _bandBufferCubeArray;
     private float[] _fullSpectrumBuffer;
     private float[] _fullSpectrumBufferDecay;
+
     
     [Header("Components")]
     public Transform target;
@@ -85,12 +87,25 @@ public class AudioSpectrumEngine : MonoBehaviour
     public float spacing = 1.0f;
     public float widthMultiplier = 1.0f;
     public Vector3 cubeSize = Vector3.one;
+
+    [Header("BeatSettings")]
+    private float _average_amplitude_total;
+    private float _average_amplitude_window;
+    private long _steps_total;
+    private long _steps_window;
+    public float amplitudeWindow;
+    public float heuristicBeatFloor;
+    public float estimatedBPM;
+
+    [Header("Other")]
+    private float[] _amplitude_peaks;
+    public float clampMultiplier = 1.0f;
     
     [Header("CameraSettings")]
     public bool rotate;
     public float speed;
     
-    
+
     private void Awake()
     {
         Debug.LogWarning("FFT buffer reads ocasionally produce exceptions which are silently ignored");
@@ -116,8 +131,11 @@ public class AudioSpectrumEngine : MonoBehaviour
         _bandBufferDecay = new float[8];
         _fullSpectrumBuffer = new float[SampleCount];
         _fullSpectrumBufferDecay = new float[SampleCount];
+        _amplitude_peaks = new float[8];
         
     }
+
+    // TODO Add better amplitude equlization (dealing with low volumes)
 
     // Start is called before the first frame update
     void Start()
@@ -126,17 +144,8 @@ public class AudioSpectrumEngine : MonoBehaviour
         {
             ReadMicrophone();
         }
-        RegenerateSpectrum();
-        Vector3 center = _audioCubeArray[0].localPosition - _audioCubeArray[^1].localPosition;
-        float center_offset = center.magnitude * 0.5f;
-        rotatePivot.localPosition =
-            _audioCubeArray[^1].localPosition + (center.normalized * center_offset);
-        if (rotate)
-        {
-            cameraTransform.localPosition =
-                _audioCubeArray[^1].localPosition + (center.normalized * center_offset) + new Vector3(0f, 0f, (-1.0f) * center_offset);
-            cameraTransform.parent = rotatePivot.transform;
-        }
+        //RegenerateSpectrum();
+        RegenerateBand();
     }
 
     // Update is called once per frame
@@ -155,18 +164,34 @@ public class AudioSpectrumEngine : MonoBehaviour
        {
            FullSpectrumBuffer();
        }
-       //MakeFrequencyBand();
-       //BandBuffer();
+       MakeFrequencyBand();
+       BandBuffer();
+       ClampAmplitudes(_bandBuffer);
        if (regenerateSpectrum)
        {
            RegenerateSpectrum();
            regenerateSpectrum = false;
        }
-       AnimateSpectrum();
+       //AnimateSpectrum();
+       AnimateBand();
        if (rotate)
        {
            RotateCam();
        }
+    }
+
+    void SetupCamera()
+    {
+        Vector3 center = _audioCubeArray[0].localPosition - _audioCubeArray[^1].localPosition;
+        float center_offset = center.magnitude * 0.5f;
+        rotatePivot.localPosition =
+            _audioCubeArray[^1].localPosition + (center.normalized * center_offset);
+        if (rotate)
+        {
+            cameraTransform.localPosition =
+                _audioCubeArray[^1].localPosition + (center.normalized * center_offset) + new Vector3(0f, 0f, (-1.0f) * center_offset);
+            cameraTransform.parent = rotatePivot.transform;
+        }
     }
 
     void RegenerateSpectrum()
@@ -200,9 +225,10 @@ public class AudioSpectrumEngine : MonoBehaviour
 
     void RegenerateBand()
     {
+        _bandBufferCubeArray = new Transform[8];
         for (int i = 0; i < _bandBufferCubeArray.Length; i++)
         {
-            _bandBufferCubeArray[i] = Instantiate(target, new Vector3(0f, 0f, 0f), Quaternion.identity);
+            _bandBufferCubeArray[i] = Instantiate(target, new Vector3(0f, 0f, 0f) + i * new Vector3(2.0f, 0.0f, 0.0f), Quaternion.identity);
             _bandBufferCubeArray[i].parent = transform;
         }
     }
@@ -241,6 +267,36 @@ public class AudioSpectrumEngine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clamp values to range [0, 1] * clampMultiplier
+    /// </summary>
+    /// <param name="samples"></param>
+    void ClampAmplitudes(float[] samples)
+    {
+        for (var i = 0; i < samples.Length; i++)
+        {
+            _amplitude_peaks[i] = Mathf.Max(_amplitude_peaks[i], samples[i]);
+            _bandBuffer[i] = (_bandBuffer[i] / _amplitude_peaks[i]) * clampMultiplier;
+        }
+    }
+
+    void AverageAmplitude(float[] samples)
+    {
+        _steps_total++;
+        _steps_window++;
+        var current_amplitude = (float) samples.Sum() / (float) samples.Length;
+        _average_amplitude_total = (_average_amplitude_total + current_amplitude) / (float) _steps_total;
+        _average_amplitude_window = (_average_amplitude_window + current_amplitude) / (float) _steps_window;
+    }
+
+    void BeatDetection(float[] samples)
+    {
+        /*
+        -Assume large Amplitude peaks as beats (prefer in lower frequencys)
+        -Use AverageAmplitude as reference
+        */
+    }
+
     void AnimateSpectrum()
     {
         if (useFullBuffer)
@@ -264,7 +320,16 @@ public class AudioSpectrumEngine : MonoBehaviour
 
     void AnimateBand()
     {
-        
+        Vector3 debug_origin = new Vector3(0f, 0f, 0f);
+        Vector3 origin = new Vector3(0f, 0f, 10f);
+        for (int i = 0; i < _bandBuffer.Length; i++)
+        {
+            Vector3 start = debug_origin + new Vector3(i * 2.0f, 0.0f, 0.0f);
+            Vector3 end = start + new Vector3(0.0f, _bandBuffer[i], 0.0f);
+            Debug.DrawLine(start, end, Color.green);
+
+            _bandBufferCubeArray[i].localScale = new Vector3(_bandBufferCubeArray[i].localScale.x, cubeSize.y + _bandBuffer[i] * 10f, _bandBufferCubeArray[i].localScale.z);
+        }
     }
 
     void MakeFrequencyBand()
