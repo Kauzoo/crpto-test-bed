@@ -7,44 +7,9 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEditor;
 using UnityEngine.XR;
+using Unity.VisualScripting;
+using UnityEngine.Audio;
 
-[System.Serializable]
-public class EqualizerSettings
-{
-    [Header("BandWidth")]
-    public uint bandWidth1 = 1;
-    public uint bandWidth2 = 2;
-    public uint bandWidth3 = 4;
-    public uint bandWidth4 = 8;
-    public uint bandWidth5 = 16; 
-    public uint bandWidth6 = 32;
-    public uint bandWidth7 = 64;
-    public uint bandWidth8 = 128;
-
-    [Header("Multipliers")] 
-    [Range(0.0f, 2f)]public float band1 = 1.0f;
-    [Range(0.0f, 2f)]public float band2 = 1.0f;
-    [Range(0.0f, 2f)]public float band3 = 1.0f;
-    [Range(0.0f, 2f)]public float band4 = 1.0f;
-    [Range(0.0f, 2f)]public float band5 = 1.0f;
-    [Range(0.0f, 2f)]public float band6 = 1.0f;
-    [Range(0.0f, 2f)]public float band7 = 1.0f;
-    [Range(0.0f, 2f)]public float band8 = 1.0f;
-}
-
-[System.Serializable]
-public class BandSettings
-{
-    [Header("BandWidth")]
-    public uint bandWidth1 = 1;
-    public uint bandWidth2 = 2;
-    public uint bandWidth3 = 4;
-    public uint bandWidth4 = 8;
-    public uint bandWidth5 = 16; 
-    public uint bandWidth6 = 32;
-    public uint bandWidth7 = 64;
-    public uint bandWidth8 = 128;
-}
 
 public class AudioSpectrumEngine : MonoBehaviour
 {
@@ -70,6 +35,7 @@ public class AudioSpectrumEngine : MonoBehaviour
     public Transform rotatePivot;
     public AudioSource audioSource;
     public string microphone;
+    public AudioMixerGroup standard;
 
     [Header("SignalProcessing")] public bool useGNURadio = false;
     public EqualizerSettings equalizerSettings = new EqualizerSettings();
@@ -89,13 +55,22 @@ public class AudioSpectrumEngine : MonoBehaviour
     public Vector3 cubeSize = Vector3.one;
 
     [Header("BeatSettings")]
-    private float _average_amplitude_total;
-    private float _average_amplitude_window;
-    private long _steps_total;
-    private long _steps_window;
-    public float amplitudeWindow;
-    public float heuristicBeatFloor;
+    private Queue<float> _history = new Queue<float>();
+    public int historyLength;
+    public int useBandsLow;
+    public int useBandsHigh;
+    public float beatTimeoutDuration;
+    private bool _beatTimeout;
+    private float _currentBeatTimeout;
+    public int historyBeatTimeout;
+    public float beatThreshold;
     public float estimatedBPM;
+    public float bps;
+    public long beat_count;
+    public float duration;
+    public bool beat;
+    public bool flush;
+    private Transform _beatCube;
 
     [Header("Other")]
     private float[] _amplitude_peaks;
@@ -146,6 +121,8 @@ public class AudioSpectrumEngine : MonoBehaviour
         }
         //RegenerateSpectrum();
         RegenerateBand();
+        _beatCube = Instantiate(target, new Vector3(-3.0f, 0f, 0f), Quaternion.identity);
+        _beatCube.parent = this.transform;
     }
 
     // Update is called once per frame
@@ -165,8 +142,10 @@ public class AudioSpectrumEngine : MonoBehaviour
            FullSpectrumBuffer();
        }
        MakeFrequencyBand();
-       BandBuffer();
+       //BandBuffer();
+       BeatDetection(_bandBuffer);
        ClampAmplitudes(_bandBuffer);
+       //BeatDetection(_bandBuffer);
        if (regenerateSpectrum)
        {
            RegenerateSpectrum();
@@ -275,6 +254,7 @@ public class AudioSpectrumEngine : MonoBehaviour
     {
         for (var i = 0; i < samples.Length; i++)
         {
+            samples[i] *= 1000f;    // TODO This is really hacky
             _amplitude_peaks[i] = Mathf.Max(_amplitude_peaks[i], samples[i]);
             _bandBuffer[i] = (_bandBuffer[i] / _amplitude_peaks[i]) * clampMultiplier;
         }
@@ -282,19 +262,68 @@ public class AudioSpectrumEngine : MonoBehaviour
 
     void AverageAmplitude(float[] samples)
     {
-        _steps_total++;
-        _steps_window++;
-        var current_amplitude = (float) samples.Sum() / (float) samples.Length;
-        _average_amplitude_total = (_average_amplitude_total + current_amplitude) / (float) _steps_total;
-        _average_amplitude_window = (_average_amplitude_window + current_amplitude) / (float) _steps_window;
+        
+
     }
 
     void BeatDetection(float[] samples)
     {
+        // TODO This stuff should be moved into fixed update to be framerate independent
         /*
         -Assume large Amplitude peaks as beats (prefer in lower frequencys)
         -Use AverageAmplitude as reference
+        -For sake of sanity beats are counted as fractions of a bar instead of completed bars
         */
+
+        // TODO Everything relating to time here is still wacky
+        beat = false;
+        if (flush)
+        {
+            duration = 0f;
+            beat_count = 0;
+        }
+        duration += Time.deltaTime;
+        if (_beatTimeout)
+        {
+            _currentBeatTimeout -= Time.deltaTime;
+            _beatCube.localScale = new Vector3(1f, _beatCube.localScale.y / 2f, 1f);
+            if (_currentBeatTimeout <= 0)
+            {
+                _beatTimeout = false;
+                _currentBeatTimeout = beatTimeoutDuration;
+                _beatCube.localScale = Vector3.zero;
+            }
+        }
+
+        var frame_amplitude = 0f;
+        for (var i = useBandsLow; i <= useBandsHigh; i++)
+        {
+            frame_amplitude += samples[i];
+        }
+
+        if (!_beatTimeout && frame_amplitude >= (_history.Sum() / (float) _history.Count) * beatThreshold)
+        {
+            _beatTimeout = true;
+            beat = true;
+            beat_count++;
+            Debug.Log("Beat");
+            _currentBeatTimeout = beatTimeoutDuration;
+            _beatCube.localScale = new Vector3(1f, 15f, 1f);
+        }
+
+        if (_beatTimeout && _currentBeatTimeout >= beatTimeoutDuration / 2f)
+        {
+            bps = beat_count / duration;
+            estimatedBPM = bps * 60f;
+            return;
+        }
+        if (_history.Count > historyLength)
+        {
+            _history.Dequeue();
+        }
+        _history.Enqueue(frame_amplitude);
+        bps = beat_count / duration;
+        estimatedBPM = bps * 60f;
     }
 
     void AnimateSpectrum()
@@ -320,15 +349,9 @@ public class AudioSpectrumEngine : MonoBehaviour
 
     void AnimateBand()
     {
-        Vector3 debug_origin = new Vector3(0f, 0f, 0f);
-        Vector3 origin = new Vector3(0f, 0f, 10f);
         for (int i = 0; i < _bandBuffer.Length; i++)
         {
-            Vector3 start = debug_origin + new Vector3(i * 2.0f, 0.0f, 0.0f);
-            Vector3 end = start + new Vector3(0.0f, _bandBuffer[i], 0.0f);
-            Debug.DrawLine(start, end, Color.green);
-
-            _bandBufferCubeArray[i].localScale = new Vector3(_bandBufferCubeArray[i].localScale.x, cubeSize.y + _bandBuffer[i] * 10f, _bandBufferCubeArray[i].localScale.z);
+            _bandBufferCubeArray[i].localScale = new Vector3(_bandBufferCubeArray[i].localScale.x, cubeSize.y + _bandBuffer[i], _bandBufferCubeArray[i].localScale.z);
         }
     }
 
@@ -354,6 +377,7 @@ public class AudioSpectrumEngine : MonoBehaviour
             }
             average /= bandWidths[j];
             _spectrumBands[j] = average;
+            _bandBuffer[j] = average;
             position += bandWidths[j];
         }
     }
@@ -423,10 +447,16 @@ public class AudioSpectrumEngine : MonoBehaviour
     private void GenerateFFTBuffer()
     {
         AudioListener.GetSpectrumData(_spectrumBuffer, 0, FFTWindow.BlackmanHarris);
+        foreach (var samp in _spectrumBuffer)
+        {
+            Debug.Log(samp);
+        }
     }
 
     private void ReadMicrophone()
     {
+        microphone = Microphone.devices[0].ToString();
+        audioSource.outputAudioMixerGroup = standard;
         audioSource.clip = Microphone.Start(microphone, true, 10, AudioSettings.outputSampleRate);
         audioSource.Play();
     }
@@ -435,4 +465,42 @@ public class AudioSpectrumEngine : MonoBehaviour
     {
         rotatePivot.transform.Rotate(speed * Time.deltaTime * 0.5f, speed * Time.deltaTime, 0);
     }
+}
+
+[System.Serializable]
+public class EqualizerSettings
+{
+    [Header("BandWidth")]
+    public uint bandWidth1 = 1;
+    public uint bandWidth2 = 2;
+    public uint bandWidth3 = 4;
+    public uint bandWidth4 = 8;
+    public uint bandWidth5 = 16; 
+    public uint bandWidth6 = 32;
+    public uint bandWidth7 = 64;
+    public uint bandWidth8 = 128;
+
+    [Header("Multipliers")] 
+    [Range(0.0f, 2f)]public float band1 = 1.0f;
+    [Range(0.0f, 2f)]public float band2 = 1.0f;
+    [Range(0.0f, 2f)]public float band3 = 1.0f;
+    [Range(0.0f, 2f)]public float band4 = 1.0f;
+    [Range(0.0f, 2f)]public float band5 = 1.0f;
+    [Range(0.0f, 2f)]public float band6 = 1.0f;
+    [Range(0.0f, 2f)]public float band7 = 1.0f;
+    [Range(0.0f, 2f)]public float band8 = 1.0f;
+}
+
+[System.Serializable]
+public class BandSettings
+{
+    [Header("BandWidth")]
+    public uint bandWidth1 = 1;
+    public uint bandWidth2 = 2;
+    public uint bandWidth3 = 4;
+    public uint bandWidth4 = 8;
+    public uint bandWidth5 = 16; 
+    public uint bandWidth6 = 32;
+    public uint bandWidth7 = 64;
+    public uint bandWidth8 = 128;
 }
