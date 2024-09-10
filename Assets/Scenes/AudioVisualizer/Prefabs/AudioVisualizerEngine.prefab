@@ -31,7 +31,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8732856040064935517}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &6556280030254470143
+--- !u!1 &7674550503196617728
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39,10 +39,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1230026674561132625}
-  - component: {fileID: 7464150687868246886}
-  - component: {fileID: 7108296829057607784}
-  - component: {fileID: 3905240819836406430}
+  - component: {fileID: 222596883787459912}
+  - component: {fileID: 6627803687484154693}
+  - component: {fileID: 2608244372456966483}
+  - component: {fileID: 5815613459911407730}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -50,13 +50,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1230026674561132625
+--- !u!4 &222596883787459912
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6556280030254470143}
+  m_GameObject: {fileID: 7674550503196617728}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -65,13 +65,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8732856040064935517}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!20 &7464150687868246886
+--- !u!20 &6627803687484154693
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6556280030254470143}
+  m_GameObject: {fileID: 7674550503196617728}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
@@ -116,21 +116,21 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &7108296829057607784
+--- !u!81 &2608244372456966483
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6556280030254470143}
+  m_GameObject: {fileID: 7674550503196617728}
   m_Enabled: 1
---- !u!114 &3905240819836406430
+--- !u!114 &5815613459911407730
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6556280030254470143}
+  m_GameObject: {fileID: 7674550503196617728}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23c1ce4fb46143f46bc5cb5224c934f6, type: 3}
@@ -263,7 +263,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8732856040064935517}
   - component: {fileID: 3155402646451135912}
-  - component: {fileID: 8058652555244158418}
   m_Layer: 0
   m_Name: AudioVisualizerEngine
   m_TagString: Untagged
@@ -284,8 +283,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1230026674561132625}
   - {fileID: 3902700027847797724}
+  - {fileID: 222596883787459912}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3155402646451135912
@@ -300,13 +299,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7df9de9cfe5a90a4e8c2991a1af68020, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 8280875263878687333, guid: 6fa11bf6aef46a847b6345696f3be65d, type: 3}
-  bandCube: {fileID: 3796256334522880940, guid: 1687a7e800e07f14d8178b672cef6004,
-    type: 3}
-  cameraTransform: {fileID: 1230026674561132625}
-  rotatePivot: {fileID: 3902700027847797724}
-  audioSource: {fileID: 8058652555244158418}
-  useGNURadio: 0
+  audioFilePath: R:\sink.txt
+  displaySpectrum: 1
+  displayBands: 1
+  displayBeat: 1
   equalizerSettings:
     bandWidth1: 1
     bandWidth2: 2
@@ -333,112 +329,39 @@ MonoBehaviour:
     bandWidth6: 32
     bandWidth7: 64
     bandWidth8: 128
-  regenerateSpectrum: 0
-  useFullBuffer: 0
-  cutoffLow: 0
-  cutoffHigh: 100
-  amplitudeCeiling: 1
-  flatAmplitudeMultiplier: 1
-  bandBufferDecayRate: 0.005
-  bandBandBufferDecayMultiplier: 1.2
-  spacing: 2
-  widthMultiplier: 10
-  cubeSize: {x: 1, y: 1, z: 1}
-  rotate: 0
-  speed: 2
---- !u!82 &8058652555244158418
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8213583119203922421}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  beatSettings:
+    estimatedBPM: 0
+    bps: 0
+    beat_count: 0
+    flush: 0
+    historyLength: 100
+    useBandsLow: 0
+    useBandsHigh: 5
+    beatTimeoutDuration: 0.2
+    historyBeatTimeout: 0
+    beatThreshold: 1.5
+    duration: 0
+  clampMultiplier: 1
+  visualSettings:
+    regenerateSpectrum: 0
+    useFullBuffer: 0
+    rotate: 0
+    cutoffLow: 0
+    cutoffHigh: 100
+    spectrumAmplitudeCeiling: 1
+    spectrumMultiplier: 1
+    bandBufferDecayRate: 0.005
+    bandBandBufferDecayMultiplier: 1.2
+    spacing: 1
+    widthMultiplier: 1
+    cubeSize: {x: 1, y: 1, z: 1}
+    bandAmplitudeCeiling: 20
+    bandAmplitudeMultiplier: 20
+    target: {fileID: 8280875263878687333, guid: 6fa11bf6aef46a847b6345696f3be65d,
+      type: 3}
+    bandCube: {fileID: 3796256334522880940, guid: 1687a7e800e07f14d8178b672cef6004,
+      type: 3}
+    beatCube: {fileID: 8280875263878687333, guid: 6fa11bf6aef46a847b6345696f3be65d,
+      type: 3}
+    cameraTransform: {fileID: 222596883787459912}
+    rotatePivot: {fileID: 3902700027847797724}
