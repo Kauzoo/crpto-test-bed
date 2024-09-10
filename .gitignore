@@ -103,4 +103,4 @@ crashlytics-build.properties
 fmod_editor.log
 
 GNURadio/.venv/*
-GNURadio/__pycache__/*
+GNURadio/__pycache__/
