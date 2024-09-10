@@ -1,5 +1,18 @@
-import { ZkSendLinkBuilder, ZkSendLink } from '@mysten/zksend'
+import { ZkSendLinkBuilder, ZkSendLink } from '@mysten/zksend';
+import * as fs from 'fs';
 
-const linkUrl = "https://getstashed.com/claim#$8A8Krv00c9+2qJhZ1+04GS6J+9VXZhfTMWkHRA6129A=";
-const link = await ZkSendLink.fromUrl(linkUrl);
-console.log(await link.claimed);
+let codes = [];
+codes.push("https://getstashed.com/claim#$8A8Krv00c9+2qJhZ1+04GS6J+9VXZhfTMWkHRA6129A=");
+codes.push("https://getstashed.com/claim#$3OSbk9k7r7ytPjB9RGDnJD4Pmg/WPxD2QWsqoCfCr1s=");
+codes.push("https://getstashed.com/claim#$MVpMofoXBmLeZYpUklHZAw03TrC/ENRd0DFPT5TJw+0=");
+codes.push("https://getstashed.com/claim#$nH+1elBUBKXAEqjLqrNw3Y79ayutenT5lrRg/PnwFo8=");
+
+// TODO: real links
+
+
+let rink = [];
+for (let i = 0; i < codes.length; i++) {
+    let tlink = await ZkSendLink.fromUrl(codes[i]);
+    rink.push({link:codes[i], claimed:tlink.claimed})
+}
+console.log(rink);
