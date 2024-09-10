@@ -342,7 +342,7 @@ namespace AudioVisualizer
 
         public float[] GetSpectrum()
         {
-            throw new NotImplementedException();
+            return _spectrumBuffer;
         }
 
         public float[] GetSpectrumBuffered()
@@ -352,7 +352,7 @@ namespace AudioVisualizer
 
         public float[] GetBands()
         {
-            throw new NotImplementedException();
+            return _bandBuffer;
         }
 
         public float[] GetBandsBuffered()

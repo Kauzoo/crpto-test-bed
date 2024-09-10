@@ -348,8 +348,8 @@ MonoBehaviour:
     rotate: 0
     cutoffLow: 0
     cutoffHigh: 100
-    spectrumAmplitudeCeiling: 1
-    spectrumMultiplier: 1
+    spectrumAmplitudeCeiling: 100
+    spectrumMultiplier: 100
     bandBufferDecayRate: 0.005
     bandBandBufferDecayMultiplier: 1.2
     spacing: 1
