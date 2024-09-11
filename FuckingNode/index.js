@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as NodeSchedule from 'node-schedule';
 
 let codes = [];
+codes.push("https://getstashed.com/claim#$hB+lc7uxhtjOEQsGw8xoQZ3yMN2+H6yyP78Mp7TlJWw=");
 codes.push("https://getstashed.com/claim#$8A8Krv00c9+2qJhZ1+04GS6J+9VXZhfTMWkHRA6129A=");
 codes.push("https://getstashed.com/claim#$3OSbk9k7r7ytPjB9RGDnJD4Pmg/WPxD2QWsqoCfCr1s=");
 codes.push("https://getstashed.com/claim#$MVpMofoXBmLeZYpUklHZAw03TrC/ENRd0DFPT5TJw+0=");
