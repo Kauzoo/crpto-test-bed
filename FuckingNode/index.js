@@ -16,3 +16,5 @@ for (let i = 0; i < codes.length; i++) {
     rink.push({link:codes[i], claimed:tlink.claimed})
 }
 console.log(rink);
+fs.writeFileSync('R:/claims.json', JSON.stringify(rink));
+
