@@ -102,7 +102,7 @@ crashlytics-build.properties
 # Log files can be ignored.
 fmod_editor.log
 
-GNURadio/.venv/*
+GNURadio/.venv/
 GNURadio/__pycache__/
 
 # Dependency directories
