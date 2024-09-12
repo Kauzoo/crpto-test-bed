@@ -2,21 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class fps : MonoBehaviour
+public class AirDrop : MonoBehaviour
 {
+    public Transform start;
+    public Transform end;
+    
+    
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = -1;
-        Debug.Log("Help");
-    }
-
-
-    void Awake()
-    {
         
     }
-
 
     // Update is called once per frame
     void Update()
