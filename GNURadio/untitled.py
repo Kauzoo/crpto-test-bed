@@ -45,7 +45,7 @@ class untitled(gr.top_block):
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_float*1, vec_len)
         self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_float*vec_len)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(vec_len)
-        self.audio_source_0 = audio.source(samp_rate, "VoiceMeeter Output", True)
+        self.audio_source_0 = audio.source(samp_rate, "Scarlett 2i2 USB", True)
 
 
         ##################################################
