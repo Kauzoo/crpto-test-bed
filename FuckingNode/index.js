@@ -16,7 +16,8 @@ NodeSchedule.scheduleJob('*/1 * * * * *', async () => {
     let rink = [];
     for (let i = 0; i < codes.length; i++) {
         let tlink = await ZkSendLink.fromUrl(codes[i]);
-        rink.push({link:codes[i], claimed:tlink.claimed})
+        let claimed = tlink.claimed ? 1 : 0;
+        rink.push({link:codes[i], claimed:claimed})
     }
     console.log(rink);
     fs.writeFileSync('R:/claims.json', JSON.stringify(rink));
