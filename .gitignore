@@ -104,3 +104,6 @@ fmod_editor.log
 
 GNURadio/.venv/*
 GNURadio/__pycache__/
+
+# Dependency directories
+FuckingNode/node_modules/
