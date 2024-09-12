@@ -41,7 +41,6 @@ namespace Scenes.City.Scripts
         {
             Application.targetFrameRate = 30;
             Setup();
-            //ParseJSON();
             foreach (var entry in _itemObjectDictionary)
             {
                 Debug.Log($"object keys: {entry.Key}");
@@ -85,12 +84,18 @@ namespace Scenes.City.Scripts
                     }
                 }
             }
-            
+            _streamReader.Close();
+            _fileStream.Close();
         }
         
         public void CycleJSON()
         {
             ParseJSON();
+            if (_itemObjectDictionary.Count == 0)
+            {
+                Debug.LogWarning("No item found");
+                return;
+            }
             foreach (var item in _itemObjectDictionary)
             {
                 // Removed QR-codes that have been claimed
@@ -105,21 +110,24 @@ namespace Scenes.City.Scripts
 
         public void ParseJSON()
         {
-            var content = _streamReader.ReadToEnd();
-            content = content.Trim('[');
-            content = content.Trim(']');
-            var items = content.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < items.Length; i += 2)
+            using (var streamReader = new StreamReader(new FileStream(jsonPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                var link = items[i].Substring(items[i].IndexOf(':') + 1).Trim('"');
-                link = link.Trim('{');
-                link = link.Trim('}');
-                var unique_id = link[30..].Trim('"');
-                //Debug.Log($"ID {i}: {unique_id} | Length: {unique_id.Length}");
-                var is_claimed = bool.Parse(items[i + 1].Split(':')[1].Trim('}'));
-                if (_itemDictionary.ContainsKey(unique_id))
+                var content = streamReader.ReadToEnd();
+                content = content.Trim('[');
+                content = content.Trim(']');
+                var items = content.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < items.Length; i += 2)
                 {
-                    _itemDictionary[unique_id] = is_claimed;
+                    var link = items[i].Substring(items[i].IndexOf(':') + 1).Trim('"');
+                    link = link.Trim('{');
+                    link = link.Trim('}');
+                    var unique_id = link[30..].Trim('"');
+                    //Debug.Log($"ID {i}: {unique_id} | Length: {unique_id.Length}");
+                    var is_claimed = bool.Parse(items[i + 1].Split(':')[1].Trim('}'));
+                    if (_itemDictionary.ContainsKey(unique_id))
+                    {
+                        _itemDictionary[unique_id] = is_claimed;
+                    }
                 }
             }
         }

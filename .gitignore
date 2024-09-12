@@ -106,4 +106,4 @@ GNURadio/.venv/*
 GNURadio/__pycache__/
 
 # Dependency directories
-FuckingNode/node_modules/
+./FuckingNode/node_modules/
