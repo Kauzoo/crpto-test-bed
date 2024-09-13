@@ -60,7 +60,7 @@ namespace Scenes.City.Scripts
             // Down
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                target.transform.position += Vector3.up * verticalSpeed * Time.deltaTime;
+                target.transform.position += Vector3.up * -verticalSpeed * Time.deltaTime;
 
             }
             // flip forward
