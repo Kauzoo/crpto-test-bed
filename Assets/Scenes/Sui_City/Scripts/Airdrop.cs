@@ -20,6 +20,8 @@ public class Airdrop : MonoBehaviour
     public Sprite[] sprites = Array.Empty<Sprite>();
     public GameObject cratePrefab;
     public GameObject crateContainer;
+    public List<GameObject> debug_crates = new();
+    public List<Sprite> debug_sprites = new();
 
     // Despawn Settings
     private FileStream _fileStream;
@@ -51,6 +53,8 @@ public class Airdrop : MonoBehaviour
     private void Start()
     {
         Application.targetFrameRate = targetFrameRate;
+        //foreach (var sprite in sprites)
+        //foreach (var sprite in debug_sprites)
         foreach (var sprite in sprites)
         {
             var crate = Instantiate(cratePrefab);
@@ -182,6 +186,8 @@ public class Airdrop : MonoBehaviour
             animator.Play("Holo despawn");
         }
         // TODO Get ride of crate ater QR-Codes have faded
+        Debug.Log($"Delete: {sprites[0].transform.parent.parent.name}");
+        //sprites[0].transform.parent.parent.gameObject.SetActive(false);
         StartCoroutine(DespawnCrate(sprites[0].transform.parent.parent));
         Debug.Log($"Code {id} was claimed");
     }
