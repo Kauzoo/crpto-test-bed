@@ -11,12 +11,15 @@ public class Airdrop : MonoBehaviour
     public int targetFrameRate = 30;
     
     [Header("Drop Settings")] public KeyCode leftDropKey;
-    public KeyCode clearDrop;
+    public KeyCode standardDrop;
+    public AnimationClip[] planeAnimations;
 
     [Header("Fields")] public List<GameObject> crates = new();
     private Stack<GameObject> availableCrates = new();
     public Transform[] dropLeftStartPostions;
     public Transform[] dropLeftEndPostions;
+    public Transform[] dropAltStartPostions;
+    public Transform[] dropAltEndPostions;
     public Animator planeAnimator;
     public Sprite[] sprites = Array.Empty<Sprite>();
     public GameObject cratePrefab;
@@ -87,7 +90,12 @@ public class Airdrop : MonoBehaviour
         CycleJSON();
         if (Input.GetKeyDown(leftDropKey))
         {
-            TriggerDropLeft();
+            TriggerDropLeft("plane");
+        }
+
+        if (Input.GetKeyDown(standardDrop))
+        {
+            TriggerDropLeft("planedrop");
         }
     }
 
@@ -200,28 +208,52 @@ public class Airdrop : MonoBehaviour
     #endregion
 
 
-    void TriggerDropLeft()
+    void TriggerDropLeft(string clip_name)
     {
         planeAnimator.enabled = true;
-        planeAnimator.Play("plane");
-        StartCoroutine(DropCoroutine());
+        planeAnimator.Play(clip_name);
+        StartCoroutine(DropCoroutine(clip_name, 4));
     }
 
-    IEnumerator DropCoroutine()
+    IEnumerator DropCoroutine(string clip_name, int crate_count)
     {
-        yield return new WaitForSeconds(5);
+        float duration = 5f;
+        foreach (var clip in planeAnimations)
+        {
+            if (clip.name == clip_name)
+            {
+                duration = clip.length;
+            }
+        }
+        yield return new WaitForSeconds(duration);
+        
+        int limit = 4;
         if (availableCrates.Count < 4)
         {
             Debug.LogWarning("Less than 4 crates left, something went wrong");
+            limit = availableCrates.Count;
         }
+        
 
-        for (int i = 0; i < 4; i++)
+        Transform[] start_postitions;
+        Transform[] end_postitions;
+        if (clip_name == "plane")
+        {
+            start_postitions = dropLeftStartPostions;
+            end_postitions = dropLeftEndPostions;
+        }
+        else
+        {
+            start_postitions = dropAltStartPostions;
+            end_postitions = dropAltEndPostions;
+        }
+        for (int i = 0; i < limit; i++)
         {
             if (availableCrates.TryPop(out var crate))
             {
                 var drop_handler = crate.GetComponent<CrateDropHandler>();
-                drop_handler.startPosition = dropLeftStartPostions[i];
-                drop_handler.endPosition = dropLeftEndPostions[i];
+                drop_handler.startPosition = start_postitions[i];
+                drop_handler.endPosition = end_postitions[i];
                 crate.gameObject.SetActive(true);
             }
             else
