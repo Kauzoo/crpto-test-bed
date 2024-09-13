@@ -12,7 +12,17 @@ public class Airdrop : MonoBehaviour
     
     [Header("Drop Settings")] public KeyCode leftDropKey;
     public KeyCode standardDrop;
+    public KeyCode turnRightKey;
+    public KeyCode turnLeftKey;
+    public KeyCode forwardKey;
+    public KeyCode backwardKey;
+    public KeyCode leftKey;
+    public KeyCode rightKey;
+    public KeyCode upKey;
+    public KeyCode downKey;
     public AnimationClip[] planeAnimations;
+    public Transform cameraTransform;
+    public float turnSpeed = 5f;
 
     [Header("Fields")] public List<GameObject> crates = new();
     private Stack<GameObject> availableCrates = new();
@@ -97,6 +107,17 @@ public class Airdrop : MonoBehaviour
         {
             TriggerDropLeft("planedrop");
         }
+
+        if (Input.GetKey(turnRightKey))
+        {
+            cameraTransform.Rotate(Vector3.up, turnSpeed * Time.deltaTime, Space.Self);
+        }
+
+        if (Input.GetKey(turnLeftKey))
+        {
+            cameraTransform.Rotate(Vector3.up, -turnSpeed * Time.deltaTime, Space.Self);
+        }
+        
     }
 
     #region Despawn
