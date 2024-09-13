@@ -2,22 +2,24 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Airdrop : MonoBehaviour
 {
+    [Header("General Settings")]
+    public int targetFrameRate = 30;
+    
     [Header("Drop Settings")] public KeyCode leftDropKey;
-    public KeyCode rightDropKey;
 
     [Header("Fields")] public List<GameObject> crates = new();
     private Stack<GameObject> availableCrates = new();
     public Transform[] dropLeftStartPostions;
-    public Transform[] dropRightStartPostions;
     public Transform[] dropLeftEndPostions;
-    public Transform[] dropRightEndPostions;
-    
-    // Drop
-    private Stack<Transform> dropBuffer = new();
+    public Animator planeAnimator;
+    public Sprite[] sprites = Array.Empty<Sprite>();
+    public GameObject cratePrefab;
+    public GameObject crateContainer;
 
     // Despawn Settings
     private FileStream _fileStream;
@@ -48,7 +50,20 @@ public class Airdrop : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 30;
+        Application.targetFrameRate = targetFrameRate;
+        foreach (var sprite in sprites)
+        {
+            var crate = Instantiate(cratePrefab);
+            crate.transform.SetParent(crateContainer.transform);
+            crate.name = $"cr_{sprite.name}";
+            var render = crate.GetComponentsInChildren<SpriteRenderer>();
+            foreach (var renderer in render)
+            {
+                renderer.sprite = sprite;
+            }
+            crate.SetActive(false);
+            crates.Add(crate);
+        }
         Setup();
         foreach (var entry in _itemObjectDictionary)
         {
@@ -112,9 +127,9 @@ public class Airdrop : MonoBehaviour
     public void CycleJSON()
     {
         ParseJSON();
-        if (_itemObjectDictionary.Count == 0)
+        if (!_itemObjectDictionary.Any())
         {
-            Debug.LogWarning("No item found");
+            Debug.LogWarning("No item found. Either all codes claimed or claims.json is setup improperly.");
             return;
         }
 
@@ -163,17 +178,32 @@ public class Airdrop : MonoBehaviour
         {
             var qr_object = sprite.gameObject;
             var animator = qr_object.GetComponent<Animator>();
+            animator.enabled = true;
             animator.Play("Holo despawn");
         }
         // TODO Get ride of crate ater QR-Codes have faded
-
+        StartCoroutine(DespawnCrate(sprites[0].transform.parent.parent));
         Debug.Log($"Code {id} was claimed");
+    }
+
+    IEnumerator DespawnCrate(Transform crate)
+    {
+        yield return new WaitForSeconds(3f);
+        crate.gameObject.SetActive(false);
     }
     #endregion
 
 
     void TriggerDropLeft()
     {
+        planeAnimator.enabled = true;
+        planeAnimator.Play("plane");
+        StartCoroutine(DropCoroutine());
+    }
+
+    IEnumerator DropCoroutine()
+    {
+        yield return new WaitForSeconds(5);
         if (availableCrates.Count < 4)
         {
             Debug.LogWarning("Less than 4 crates left, something went wrong");
@@ -193,14 +223,5 @@ public class Airdrop : MonoBehaviour
                 Debug.LogWarning("Failed to pop crate, something went wrong");
             }
         }
-    }
-
-    void TriggerDropRight()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void AnimateDrop()
-    {
     }
 }

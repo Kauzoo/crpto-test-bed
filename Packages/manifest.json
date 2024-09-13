@@ -1,11 +1,11 @@
 {
   "dependencies": {
+    "com.mezookan.shell": "https://github.com/abbabon/UnityShell.git",
     "com.unity.collab-proxy": "2.4.4",
     "com.unity.feature.development": "1.0.1",
     "com.unity.probuilder": "5.2.3",
     "com.unity.recorder": "4.0.3",
     "com.unity.render-pipelines.high-definition": "14.0.11",
-    "com.unity.scripting.python": "6.0.1",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.7.6",
     "com.unity.ugui": "1.0.0",
@@ -40,8 +40,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "com.mezookan.shell":"https://github.com/abbabon/UnityShell.git"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
