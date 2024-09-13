@@ -9,6 +9,7 @@ public class CrateDropHandler : MonoBehaviour
     public Transform endPosition;
     public Transform despawnPosition;
     public float speed;
+    public float rotationSpeed;
     
     private float startTime;
     private float journeyLength;
@@ -30,6 +31,7 @@ public class CrateDropHandler : MonoBehaviour
 
     private void Update()
     {
+        transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.Self);
         if (!despawn)
         {
             // Distance moved equals elapsed time times speed..

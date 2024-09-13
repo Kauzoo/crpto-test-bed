@@ -11,6 +11,7 @@ public class Airdrop : MonoBehaviour
     public int targetFrameRate = 30;
     
     [Header("Drop Settings")] public KeyCode leftDropKey;
+    public KeyCode clearDrop;
 
     [Header("Fields")] public List<GameObject> crates = new();
     private Stack<GameObject> availableCrates = new();
@@ -187,7 +188,6 @@ public class Airdrop : MonoBehaviour
         }
         // TODO Get ride of crate ater QR-Codes have faded
         Debug.Log($"Delete: {sprites[0].transform.parent.parent.name}");
-        //sprites[0].transform.parent.parent.gameObject.SetActive(false);
         StartCoroutine(DespawnCrate(sprites[0].transform.parent.parent));
         Debug.Log($"Code {id} was claimed");
     }

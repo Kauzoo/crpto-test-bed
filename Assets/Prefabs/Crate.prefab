@@ -204,6 +204,7 @@ MonoBehaviour:
   endPosition: {fileID: 0}
   despawnPosition: {fileID: 0}
   speed: 40
+  rotationSpeed: 5
   despawnDistance: 0
 --- !u!1 &8371364852389449882
 GameObject:
@@ -407,7 +408,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: ce85708ca70a22a4f9a2708a92e5b14a,
+      objectReference: {fileID: 21300000, guid: 60470c42956719144a495d32c2055a69,
         type: 3}
     - target: {fileID: 7759608330478585118, guid: 5395982d6d62d054da36070d1edad0db,
         type: 3}
@@ -527,7 +528,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: ce85708ca70a22a4f9a2708a92e5b14a,
+      objectReference: {fileID: 21300000, guid: 60470c42956719144a495d32c2055a69,
         type: 3}
     - target: {fileID: 7759608330478585118, guid: 5395982d6d62d054da36070d1edad0db,
         type: 3}
@@ -647,7 +648,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: ce85708ca70a22a4f9a2708a92e5b14a,
+      objectReference: {fileID: 21300000, guid: 60470c42956719144a495d32c2055a69,
         type: 3}
     - target: {fileID: 7759608330478585118, guid: 5395982d6d62d054da36070d1edad0db,
         type: 3}
@@ -842,7 +843,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: ce85708ca70a22a4f9a2708a92e5b14a,
+      objectReference: {fileID: 21300000, guid: 60470c42956719144a495d32c2055a69,
         type: 3}
     - target: {fileID: 7759608330478585118, guid: 5395982d6d62d054da36070d1edad0db,
         type: 3}
