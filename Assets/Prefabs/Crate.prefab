@@ -138,6 +138,7 @@ GameObject:
   m_Component:
   - component: {fileID: 710660446930507842}
   - component: {fileID: 3340392012941015506}
+  - component: {fileID: 5562379705796886430}
   m_Layer: 0
   m_Name: Crate
   m_TagString: Untagged
@@ -187,6 +188,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5562379705796886430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7674257537608843001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03a6762025a34753a65c185c1e03118f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startPosition: {fileID: 0}
+  endPosition: {fileID: 0}
+  despawnPosition: {fileID: 0}
+  speed: 40
+  despawnDistance: 0
 --- !u!1 &8371364852389449882
 GameObject:
   m_ObjectHideFlags: 0

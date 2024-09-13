@@ -1,0 +1,206 @@
+using System;
+using System.Collections;
+using System.IO;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Airdrop : MonoBehaviour
+{
+    [Header("Drop Settings")] public KeyCode leftDropKey;
+    public KeyCode rightDropKey;
+
+    [Header("Fields")] public List<GameObject> crates = new();
+    private Stack<GameObject> availableCrates = new();
+    public Transform[] dropLeftStartPostions;
+    public Transform[] dropRightStartPostions;
+    public Transform[] dropLeftEndPostions;
+    public Transform[] dropRightEndPostions;
+    
+    // Drop
+    private Stack<Transform> dropBuffer = new();
+
+    // Despawn Settings
+    private FileStream _fileStream;
+    private StreamReader _streamReader;
+    private Dictionary<string, bool> _itemDictionary = new();
+    private Dictionary<string, SpriteRenderer[]> _itemObjectDictionary = new();
+    private const int NAME_OFFSET = 30;
+
+
+    [Header("Despawn Settings")] public string jsonPath = @"R:\testclaim.json";
+
+    private void Awake()
+    {
+        try
+        {
+            _fileStream = new FileStream(jsonPath, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite);
+            _streamReader = new StreamReader(_fileStream);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Debug.LogError(e);
+            Debug.LogError("Missing json file");
+            throw;
+        }
+    }
+
+    private void Start()
+    {
+        Application.targetFrameRate = 30;
+        Setup();
+        foreach (var entry in _itemObjectDictionary)
+        {
+            Debug.Log($"object keys: {entry.Key}");
+        }
+
+        availableCrates = new Stack<GameObject>();
+        foreach (var crate in crates)
+        {
+            availableCrates.Push(crate);
+        }
+    }
+
+    void Update()
+    {
+        CycleJSON();
+        if (Input.GetKeyDown(leftDropKey))
+        {
+            TriggerDropLeft();
+        }
+    }
+
+    #region Despawn
+    public void Setup()
+    {
+        // Initialize
+        // Setup initial dictionary
+        var content = _streamReader.ReadToEnd();
+        content = content.Trim('[');
+        content = content.Trim(']');
+        var items = content.Split(",", StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < items.Length; i += 2)
+        {
+            var link = items[i].Substring(items[i].IndexOf(':') + 1).Trim('"');
+            link = link.Trim('{');
+            link = link.Trim('}');
+            var unique_id = link[30..].Trim('"');
+            Debug.Log($"ID {i}: {unique_id} | Length: {unique_id.Length}");
+            var is_claimed = bool.Parse(items[i + 1].Split(':')[1].Trim('}'));
+            _itemDictionary.Add(unique_id, is_claimed);
+        }
+
+        // Fill id to sprite map
+        foreach (var entry in _itemDictionary)
+        {
+            foreach (var code in crates)
+            {
+                var sprites = code.GetComponentsInChildren<SpriteRenderer>();
+                Debug.Log($"Sprite Name: {sprites[0].sprite.name}");
+                if (sprites[0].sprite.name == entry.Key.Replace('/', '€'))
+                {
+                    _itemObjectDictionary.Add(entry.Key, sprites);
+                }
+            }
+        }
+
+        _streamReader.Close();
+        _fileStream.Close();
+    }
+
+    public void CycleJSON()
+    {
+        ParseJSON();
+        if (_itemObjectDictionary.Count == 0)
+        {
+            Debug.LogWarning("No item found");
+            return;
+        }
+
+        foreach (var item in _itemObjectDictionary)
+        {
+            // Removed QR-codes that have been claimed
+            if (!_itemDictionary.TryGetValue(item.Key.Replace('€', '/'), out var is_claimed)) continue;
+            if (is_claimed)
+            {
+                FadeOutQR(item.Key);
+                _itemObjectDictionary.Remove(item.Key);
+                return;
+            }
+        }
+    }
+
+    public void ParseJSON()
+    {
+        using (var streamReader =
+               new StreamReader(new FileStream(jsonPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+        {
+            var content = streamReader.ReadToEnd();
+            content = content.Trim('[');
+            content = content.Trim(']');
+            var items = content.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < items.Length; i += 2)
+            {
+                var link = items[i].Substring(items[i].IndexOf(':') + 1).Trim('"');
+                link = link.Trim('{');
+                link = link.Trim('}');
+                var unique_id = link[30..].Trim('"');
+                //Debug.Log($"ID {i}: {unique_id} | Length: {unique_id.Length}");
+                var is_claimed = bool.Parse(items[i + 1].Split(':')[1].Trim('}'));
+                if (_itemDictionary.ContainsKey(unique_id))
+                {
+                    _itemDictionary[unique_id] = is_claimed;
+                }
+            }
+        }
+    }
+    
+    public void FadeOutQR(string id)
+    {
+        var sprites = _itemObjectDictionary[id];
+        foreach (var sprite in sprites)
+        {
+            var qr_object = sprite.gameObject;
+            var animator = qr_object.GetComponent<Animator>();
+            animator.Play("Holo despawn");
+        }
+        // TODO Get ride of crate ater QR-Codes have faded
+
+        Debug.Log($"Code {id} was claimed");
+    }
+    #endregion
+
+
+    void TriggerDropLeft()
+    {
+        if (availableCrates.Count < 4)
+        {
+            Debug.LogWarning("Less than 4 crates left, something went wrong");
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (availableCrates.TryPop(out var crate))
+            {
+                var drop_handler = crate.GetComponent<CrateDropHandler>();
+                drop_handler.startPosition = dropLeftStartPostions[i];
+                drop_handler.endPosition = dropLeftEndPostions[i];
+                crate.gameObject.SetActive(true);
+            }
+            else
+            {
+                Debug.LogWarning("Failed to pop crate, something went wrong");
+            }
+        }
+    }
+
+    void TriggerDropRight()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void AnimateDrop()
+    {
+    }
+}

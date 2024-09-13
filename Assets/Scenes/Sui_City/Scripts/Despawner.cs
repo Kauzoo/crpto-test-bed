@@ -10,7 +10,6 @@ namespace Scenes.City.Scripts
         private FileStream _fileStream;
         private StreamReader _streamReader;
         private Dictionary<string, bool> _itemDictionary = new();
-        //private Dictionary<string, int> _lookupTable = new();
         private Dictionary<string, SpriteRenderer[]> _itemObjectDictionary = new();
         private const int NAME_OFFSET = 30;
         
@@ -130,12 +129,6 @@ namespace Scenes.City.Scripts
                     }
                 }
             }
-        }
-
-        public void SetupJSONLookupTable()
-        {
-            // TODO Implement a more efficient lookup table based way to parse the json file
-            throw new NotImplementedException();
         }
 
         public void FadeOutQR(string id)
