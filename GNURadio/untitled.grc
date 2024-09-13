@@ -103,7 +103,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    device_name: '"Scarlett 2i2 USB"'
+    device_name: '"VoiceMeeter Output"'
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
